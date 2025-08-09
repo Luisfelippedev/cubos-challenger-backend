@@ -29,6 +29,7 @@ model Movie {
   description   String
   duration      Int
   releaseDate   DateTime
+  genres        String[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   coverImageUrl String?

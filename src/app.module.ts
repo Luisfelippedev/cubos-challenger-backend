@@ -6,9 +6,10 @@ import { AuthModule } from './modules/auth/auth.module';
 import { LoggerService } from './common/services';
 import { AuthMiddleware, LogMiddleware } from './common/middlewares';
 import { JwtService } from '@nestjs/jwt';
+import { MovieModule } from './modules/movie/movie.module';
 
 @Module({
-  imports: [UserModule, AuthModule],
+  imports: [UserModule, AuthModule, MovieModule],
   controllers: [AppController],
   providers: [AppService, LoggerService, JwtService],
 })
@@ -19,6 +20,6 @@ export class AppModule {
       .forRoutes({ path: '*', method: RequestMethod.ALL });
     consumer
       .apply(AuthMiddleware)
-      .forRoutes({ method: RequestMethod.GET, path: 'user' });
+      .forRoutes({ method: RequestMethod.ALL, path: 'movie' });
   }
 }
