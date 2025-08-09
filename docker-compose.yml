@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  db:
+    container_name: cubos-database
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: teste
+      POSTGRES_PASSWORD: teste
+      POSTGRES_DB: cubos-database
+    ports:
+      - '5432:5432'
