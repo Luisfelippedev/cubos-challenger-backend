@@ -10,6 +10,7 @@ import {
   HttpStatus,
   HttpCode,
   Query,
+  ValidationPipe,
 } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import {
@@ -28,7 +29,7 @@ import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { ResponseMovieDto } from './dto/response-movie.dto';
 import { PaginatedMovieResponseDto } from './dto/paginated-movie-response.dto';
-
+import { MovieFilterDto } from './dto/filter-movie.dto';
 
 @Controller('movie')
 export class MovieController {
@@ -93,17 +94,61 @@ export class MovieController {
     example: 10,
     description: 'Quantidade de itens por página (padrão: 10)',
   })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    example: 'Matrix',
+    description: 'Texto para busca no título, descrição e título original',
+  })
+  @ApiQuery({
+    name: 'durationMin',
+    required: false,
+    type: Number,
+    example: 60,
+    description: 'Duração mínima do filme em minutos',
+  })
+  @ApiQuery({
+    name: 'durationMax',
+    required: false,
+    type: Number,
+    example: 180,
+    description: 'Duração máxima do filme em minutos',
+  })
+  @ApiQuery({
+    name: 'releaseDateStart',
+    required: false,
+    type: String,
+    example: '2000-01-01',
+    description: 'Data mínima de lançamento (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'releaseDateEnd',
+    required: false,
+    type: String,
+    example: '2023-12-31',
+    description: 'Data máxima de lançamento (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'genre',
+    required: false,
+    type: String,
+    example: 'Action',
+    description: 'Gênero do filme',
+  })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro inesperado ao buscar filmes.',
   })
   async findAll(
     @Req() req: AuthenticatedRequest,
+    @Query(new ValidationPipe({ transform: true })) filters: MovieFilterDto,
     @Query('page') page = 1,
     @Query('perPage') perPage = 10,
   ) {
-    return await this.movieService.findAll(
+    return this.movieService.findAll(
       req.userId,
+      filters,
       Number(page),
       Number(perPage),
     );

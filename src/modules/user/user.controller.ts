@@ -41,10 +41,4 @@ export class UserController {
   async create(@Body() data: CreateUserDto): Promise<UserResponseDto> {
     return await this.userService.create(data);
   }
-
-  @Get()
-  @ApiBearerAuth()
-  teste() {
-    return { message: 'teste' };
-  }
 }

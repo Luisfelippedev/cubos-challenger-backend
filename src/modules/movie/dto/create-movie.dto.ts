@@ -3,7 +3,6 @@ import {
   IsNotEmpty,
   IsInt,
   Min,
-  IsDateString,
   IsArray,
   ArrayNotEmpty,
   IsEnum,
@@ -12,6 +11,7 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Genre } from 'src/common/enums';
+import { IsISODateOnly } from 'src/common/decorators';
 
 export class CreateMovieDto {
   @ApiProperty({
@@ -37,11 +37,13 @@ export class CreateMovieDto {
   duration: number;
 
   @ApiProperty({
-    example: '2001-12-29T00:00:00.000Z',
+    example: '2001-12-29',
     description: 'Data de lançamento do filme',
   })
-  @IsDateString()
-  releaseDate: string;
+  @IsISODateOnly({
+    message: 'O campo releaseDate deve estar no formato YYYY-MM-DD',
+  })
+  releaseDate: Date;
 
   @ApiProperty({
     isArray: true,
@@ -56,8 +58,7 @@ export class CreateMovieDto {
 
   @ApiPropertyOptional({
     description: 'Url da imagem',
-    example:
-      'https://bucket.s3.amazonaws.com/imagens/sociedade-do-anel.jpg',
+    example: 'https://bucket.s3.amazonaws.com/imagens/sociedade-do-anel.jpg',
   })
   @IsOptional()
   @IsUrl()

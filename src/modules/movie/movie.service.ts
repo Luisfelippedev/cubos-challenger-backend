@@ -4,6 +4,7 @@ import { CreateMovieDto } from './dto/create-movie.dto';
 import { plainToInstance } from 'class-transformer';
 import { mapPrismaError } from 'src/common';
 import { ResponseMovieDto } from './dto/response-movie.dto';
+import { MovieFilterDto } from './dto/filter-movie.dto';
 
 @Injectable()
 export class MovieService {
@@ -82,37 +83,71 @@ export class MovieService {
 
   async findAll(
     userId: string,
+    filters: MovieFilterDto,
     page = 1,
     perPage = 10,
-  ): Promise<{ meta: any; data: ResponseMovieDto[] }> {
-    try {
-      const skip = (page - 1) * perPage;
+  ) {
+    const skip = (page - 1) * perPage;
+    const where = this.buildWhereClause(userId, filters);
 
-      const [movies, total] = await this.prismaService.$transaction([
-        this.prismaService.movie.findMany({
-          where: { userId },
-          orderBy: { createdAt: 'desc' },
-          skip,
-          take: perPage,
-        }),
-        this.prismaService.movie.count({ where: { userId } }),
-      ]);
+    const [movies, total] = await this.prismaService.$transaction([
+      this.prismaService.movie.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: perPage,
+      }),
+      this.prismaService.movie.count({ where }),
+    ]);
 
-      const totalPages = Math.ceil(total / perPage);
+    const totalPages = Math.ceil(total / perPage);
 
-      return {
-        meta: {
-          total,
-          page,
-          perPage,
-          totalPages,
-          hasNext: page < totalPages,
-          hasPrev: page > 1,
-        },
-        data: plainToInstance(ResponseMovieDto, movies),
-      };
-    } catch (error) {
-      mapPrismaError(error, 'Falha ao buscar filmes.');
+    return {
+      meta: {
+        total,
+        page,
+        perPage,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+      data: plainToInstance(ResponseMovieDto, movies),
+    };
+  }
+
+  private buildWhereClause(userId: string, filters: MovieFilterDto) {
+    const where: any = { userId };
+
+    if (filters.search) {
+      where.OR = [
+        { title: { contains: filters.search, mode: 'insensitive' } },
+        { description: { contains: filters.search, mode: 'insensitive' } },
+        { originalTitle: { contains: filters.search, mode: 'insensitive' } },
+      ];
     }
+
+    if (filters.durationMin || filters.durationMax) {
+      where.duration = {};
+      if (filters.durationMin) where.duration.gte = filters.durationMin;
+      if (filters.durationMax) where.duration.lte = filters.durationMax;
+    }
+
+    if (filters.releaseDateStart || filters.releaseDateEnd) {
+      where.releaseDate = {};
+      if (filters.releaseDateStart)
+        where.releaseDate.gte = new Date(filters.releaseDateStart);
+      if (filters.releaseDateEnd)
+        where.releaseDate.lte = new Date(filters.releaseDateEnd);
+    }
+
+    if (filters.genre) {
+      where.genres = {
+        some: {
+          name: { contains: filters.genre, mode: 'insensitive' },
+        },
+      };
+    }
+
+    return where;
   }
 }
