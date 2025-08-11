@@ -11,6 +11,9 @@ import {
   HttpCode,
   Query,
   ValidationPipe,
+  UploadedFile,
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import {
@@ -23,6 +26,7 @@ import {
   ApiNoContentResponse,
   ApiResponse,
   ApiQuery,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import type { AuthenticatedRequest } from 'src/common/types';
 import { CreateMovieDto } from './dto/create-movie.dto';
@@ -30,6 +34,9 @@ import { UpdateMovieDto } from './dto/update-movie.dto';
 import { ResponseMovieDto } from './dto/response-movie.dto';
 import { PaginatedMovieResponseDto } from './dto/paginated-movie-response.dto';
 import { MovieFilterDto } from './dto/filter-movie.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { imageUploadOptions } from 'src/common/utils/upload.util';
+import { UploadCoverResponseDto } from './dto/upload-cover-response.dto';
 
 @Controller('movie')
 export class MovieController {
@@ -222,5 +229,41 @@ export class MovieController {
   async testCron() {
     await this.movieService.notifyMovieReleasesToday();
     return { message: 'Job executado' };
+  }
+
+  @Post('cover')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Faz upload da capa do filme para o S3.' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+      required: ['file'],
+    },
+  })
+  @ApiOkResponse({
+    description: 'Upload realizado com sucesso. Retorna URL pública.',
+    type: UploadCoverResponseDto,
+  })
+  @UseInterceptors(FileInterceptor('file', imageUploadOptions))
+  async uploadCover(
+    @Req() req: AuthenticatedRequest,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<UploadCoverResponseDto> {
+    if (!file) {
+      const msg =
+        (req as any).fileValidationError || 'Arquivo inválido ou ausente.';
+      throw new BadRequestException(msg);
+    }
+    const result = await this.movieService.uploadCover({
+      userId: req.userId,
+      buffer: file.buffer,
+      mimeType: file.mimetype,
+      originalName: file.originalname,
+    });
+    return { key: result.key, url: result.url };
   }
 }

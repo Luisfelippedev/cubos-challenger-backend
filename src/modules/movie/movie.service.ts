@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
-import { PrismaService, EmailService } from 'src/common/services';
+import { PrismaService, EmailService, S3Service } from 'src/common/services';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { plainToInstance } from 'class-transformer';
 import { mapPrismaError } from 'src/common';
@@ -20,6 +20,7 @@ export class MovieService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly emailService: EmailService,
+    private readonly s3Service: S3Service,
   ) {}
 
   async create(
@@ -38,6 +39,21 @@ export class MovieService {
     } catch (error) {
       mapPrismaError(error, 'Falha ao criar filme.');
     }
+  }
+
+  async uploadCover(params: {
+    userId: string;
+    buffer: Buffer;
+    mimeType: string;
+    originalName: string;
+  }) {
+    const { userId, buffer, mimeType, originalName } = params;
+    return this.s3Service.uploadCoverImage({
+      userId,
+      fileBuffer: buffer,
+      contentType: mimeType,
+      fileName: originalName,
+    });
   }
 
   // Job diário (1AM): envia e-mails para filmes com estreia hoje
