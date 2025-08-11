@@ -44,8 +44,8 @@ export class MovieFilterDto {
   genre?: Genre;
 
   @IsOptional()
-  @IsIn(['title', 'releaseDate', 'createdAt'])
-  sortBy?: 'title' | 'releaseDate' | 'createdAt';
+  @IsIn(['title', 'originalTitle', 'releaseDate', 'createdAt'])
+  sortBy?: 'title' | 'originalTitle' | 'releaseDate' | 'createdAt';
 
   @IsOptional()
   @IsEnum(SortOrder)

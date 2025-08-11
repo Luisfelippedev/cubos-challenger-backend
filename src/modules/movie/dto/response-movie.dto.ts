@@ -8,6 +8,12 @@ export class ResponseMovieDto {
   title: string;
 
   @ApiProperty({
+    example: 'The Lord of the Rings: The Fellowship of the Ring',
+    required: false,
+  })
+  originalTitle?: string;
+
+  @ApiProperty({
     example: '2025-08-08T00:00:00.000Z',
     type: String,
     format: 'date-time',
@@ -24,8 +30,7 @@ export class ResponseMovieDto {
   genres: string[];
 
   @ApiProperty({
-    example:
-      'https://bucket.s3.amazonaws.com/imagens/sociedade-do-anel.jpg',
+    example: 'https://bucket.s3.amazonaws.com/imagens/sociedade-do-anel.jpg',
   })
   coverImageUrl?: string;
 }

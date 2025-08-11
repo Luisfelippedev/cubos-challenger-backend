@@ -26,6 +26,7 @@ model User {
 model Movie {
   id            String   @id @default(uuid())
   title         String
+  originalTitle String?
   description   String
   duration      Int
   releaseDate   DateTime @db.Date

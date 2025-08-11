@@ -44,6 +44,15 @@ Backend do teste técnico da Cubos.io para gerenciamento de filmes.
     - multipart/form-data, campo `file`
     - erros claros em português: formato inválido, arquivo ausente e tamanho excedido
 
+Campos do filme
+- `title` (string, obrigatório)
+- `originalTitle` (string, opcional)
+- `description` (string, obrigatório)
+- `duration` (number, obrigatório)
+- `releaseDate` (date YYYY-MM-DD, obrigatório)
+- `genres` (string[], obrigatório)
+- `coverImageUrl` (string URL, opcional)
+
 ### Upload de capa (S3)
 - Cada usuário possui seu próprio prefixo: `users/{userId}/covers/arquivo`.
 - Tamanho máximo: 10MB.

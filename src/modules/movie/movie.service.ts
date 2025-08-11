@@ -230,10 +230,15 @@ export class MovieService {
     }
 
     if (filters.search) {
-      where.OR = [
+      const orConditions: Prisma.MovieWhereInput[] = [
         { title: { contains: filters.search, mode: 'insensitive' } },
         { description: { contains: filters.search, mode: 'insensitive' } },
       ];
+      orConditions.push({
+        originalTitle: { contains: filters.search, mode: 'insensitive' },
+      } as unknown as Prisma.MovieWhereInput);
+
+      where.OR = orConditions;
     }
 
     if (filters.durationMin || filters.durationMax) {

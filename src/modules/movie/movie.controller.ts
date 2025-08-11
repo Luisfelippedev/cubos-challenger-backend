@@ -107,7 +107,7 @@ export class MovieController {
     type: String,
     example: 'title',
     description:
-      'Campo para ordenação (title, releaseDate, createdAt). Padrão: title',
+      'Campo para ordenação (title, originalTitle, releaseDate, createdAt). Padrão: title',
   })
   @ApiQuery({
     name: 'sortOrder',

@@ -22,6 +22,14 @@ export class CreateMovieDto {
   @IsNotEmpty()
   title: string;
 
+  @ApiPropertyOptional({
+    example: 'The Lord of the Rings: The Fellowship of the Ring',
+    description: 'Título original do filme',
+  })
+  @IsOptional()
+  @IsString()
+  originalTitle?: string;
+
   @ApiProperty({
     example:
       'Um hobbit é incumbido de destruir um anel poderoso antes que ele caia em mãos erradas.',
