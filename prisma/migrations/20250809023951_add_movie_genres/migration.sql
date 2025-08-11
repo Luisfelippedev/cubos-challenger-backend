@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "sample"."Movie" ADD COLUMN     "genres" TEXT[];
+ALTER TABLE "public"."Movie" ADD COLUMN     "genres" TEXT[];

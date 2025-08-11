@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "sample"."User" (
+CREATE TABLE "public"."User" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE "sample"."User" (
 );
 
 -- CreateTable
-CREATE TABLE "sample"."Movie" (
+CREATE TABLE "public"."Movie" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE "sample"."Movie" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "sample"."User"("email");
+CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
 
 -- AddForeignKey
-ALTER TABLE "sample"."Movie" ADD CONSTRAINT "Movie_userId_fkey" FOREIGN KEY ("userId") REFERENCES "sample"."User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."Movie" ADD CONSTRAINT "Movie_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
