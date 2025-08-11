@@ -145,11 +145,11 @@ export class MovieController {
     description: 'Data máxima de lançamento (YYYY-MM-DD)',
   })
   @ApiQuery({
-    name: 'genres',
+    name: 'genre',
     required: false,
     type: String,
-    example: 'Ação,Drama',
-    description: 'Lista de gêneros separados por vírgula. Aceita múltiplos.',
+    example: 'Drama',
+    description: 'Filtra por um único gênero.',
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,

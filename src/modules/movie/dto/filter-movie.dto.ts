@@ -3,7 +3,6 @@ import {
   IsString,
   IsNumber,
   Min,
-  IsArray,
   IsEnum,
   IsIn,
 } from 'class-validator';
@@ -39,21 +38,6 @@ export class MovieFilterDto {
     message: 'O campo releaseDateStart deve estar no formato YYYY-MM-DD',
   })
   releaseDateEnd?: Date;
-
-  @IsOptional()
-  @IsArray()
-  @IsEnum(Genre, { each: true })
-  @Transform(({ value }) => {
-    if (Array.isArray(value)) return value;
-    if (typeof value === 'string') {
-      return value
-        .split(',')
-        .map((item) => item.trim())
-        .filter((item) => item.length > 0);
-    }
-    return undefined;
-  })
-  genres?: Genre[];
 
   @IsOptional()
   @IsEnum(Genre)

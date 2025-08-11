@@ -234,13 +234,8 @@ export class MovieService {
         where.releaseDate.lte = filters.releaseDateEnd;
     }
 
-    const genresList = [
-      ...(filters.genres ?? []),
-      ...(filters.genre ? [filters.genre] : []),
-    ];
-
-    if (genresList.length > 0) {
-      where.genres = { hasSome: genresList };
+    if (filters.genre) {
+      where.genres = { has: filters.genre };
     }
 
     return where;
