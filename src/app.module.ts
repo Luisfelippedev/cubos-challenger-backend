@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './modules/user/user.module';
@@ -9,7 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { MovieModule } from './modules/movie/movie.module';
 
 @Module({
-  imports: [UserModule, AuthModule, MovieModule],
+  imports: [ScheduleModule.forRoot(), UserModule, AuthModule, MovieModule],
   controllers: [AppController],
   providers: [AppService, LoggerService, JwtService],
 })

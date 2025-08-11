@@ -95,6 +95,21 @@ export class MovieController {
     description: 'Quantidade de itens por página (padrão: 10)',
   })
   @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    type: String,
+    example: 'title',
+    description:
+      'Campo para ordenação (title, releaseDate, createdAt). Padrão: title',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    type: String,
+    example: 'asc',
+    description: 'Ordem da ordenação (asc, desc). Padrão: asc',
+  })
+  @ApiQuery({
     name: 'search',
     required: false,
     type: String,
@@ -130,11 +145,11 @@ export class MovieController {
     description: 'Data máxima de lançamento (YYYY-MM-DD)',
   })
   @ApiQuery({
-    name: 'genre',
+    name: 'genres',
     required: false,
     type: String,
-    example: 'Action',
-    description: 'Gênero do filme',
+    example: 'Ação,Drama',
+    description: 'Lista de gêneros separados por vírgula. Aceita múltiplos.',
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -195,5 +210,17 @@ export class MovieController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string) {
     return await this.movieService.remove(id);
+  }
+
+  // Endpoint para testar cron e envio de e-mail rapidamente
+  @Post('test-cron')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Dispara manualmente o job de estreia de hoje (apenas DEV).',
+  })
+  @ApiOkResponse({ description: 'Job executado.' })
+  async testCron() {
+    await this.movieService.notifyMovieReleasesToday();
+    return { message: 'Job executado' };
   }
 }

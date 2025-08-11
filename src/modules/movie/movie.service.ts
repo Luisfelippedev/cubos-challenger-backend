@@ -1,5 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/common/services';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
+import { Prisma } from '@prisma/client';
+import { PrismaService, EmailService } from 'src/common/services';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { plainToInstance } from 'class-transformer';
 import { mapPrismaError } from 'src/common';
@@ -8,7 +15,12 @@ import { MovieFilterDto } from './dto/filter-movie.dto';
 
 @Injectable()
 export class MovieService {
-  constructor(private readonly prismaService: PrismaService) {}
+  private readonly logger = new Logger(MovieService.name);
+
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   async create(
     data: CreateMovieDto,
@@ -25,6 +37,61 @@ export class MovieService {
       return plainToInstance(ResponseMovieDto, movie);
     } catch (error) {
       mapPrismaError(error, 'Falha ao criar filme.');
+    }
+  }
+
+  // Job diário (1AM): envia e-mails para filmes com estreia hoje
+  @Cron('0 1 * * *')
+  async notifyMovieReleasesToday() {
+    const today = new Date();
+    const startOfDay = new Date(
+      Date.UTC(
+        today.getUTCFullYear(),
+        today.getUTCMonth(),
+        today.getUTCDate(),
+        0,
+        0,
+        0,
+      ),
+    );
+    const endOfDay = new Date(
+      Date.UTC(
+        today.getUTCFullYear(),
+        today.getUTCMonth(),
+        today.getUTCDate(),
+        23,
+        59,
+        59,
+        999,
+      ),
+    );
+
+    try {
+      const movies = await this.prismaService.movie.findMany({
+        where: {
+          releaseDate: {
+            gte: startOfDay,
+            lte: endOfDay,
+          },
+        },
+        include: { User: true },
+      });
+
+      for (const movie of movies) {
+        if (!movie.User?.email) continue;
+        await this.emailService.sendEmail({
+          to: movie.User.email,
+          subject: `Estreia hoje: ${movie.title}`,
+          html: `<p>Hoje é o dia! O filme <strong>${movie.title}</strong> estreia.</p>`,
+        });
+      }
+
+      this.logger.log(`Notificações de estreia enviadas: ${movies.length}`);
+    } catch (error) {
+      this.logger.error(
+        'Erro ao enviar notificações de estreia',
+        error as Error,
+      );
     }
   }
 
@@ -89,17 +156,22 @@ export class MovieService {
   ) {
     const skip = (page - 1) * perPage;
     const where = this.buildWhereClause(userId, filters);
+    const sortBy = filters.sortBy ?? 'title';
+    const sortOrder = (filters.sortOrder ?? 'asc') as 'asc' | 'desc';
+
+    const orderBy = {
+      [sortBy]: sortOrder,
+    } as Prisma.MovieOrderByWithRelationInput;
 
     const [movies, total] = await this.prismaService.$transaction([
       this.prismaService.movie.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         skip,
         take: perPage,
       }),
       this.prismaService.movie.count({ where }),
     ]);
-
     const totalPages = Math.ceil(total / perPage);
 
     return {
@@ -115,14 +187,36 @@ export class MovieService {
     };
   }
 
-  private buildWhereClause(userId: string, filters: MovieFilterDto) {
-    const where: any = { userId };
+  private buildWhereClause(
+    userId: string,
+    filters: MovieFilterDto,
+  ): Prisma.MovieWhereInput {
+    const where: Prisma.MovieWhereInput = { userId };
+
+    if (
+      filters.durationMin !== undefined &&
+      filters.durationMax !== undefined &&
+      filters.durationMin > filters.durationMax
+    ) {
+      throw new BadRequestException(
+        'durationMin não pode ser maior que durationMax',
+      );
+    }
+
+    if (
+      filters.releaseDateStart instanceof Date &&
+      filters.releaseDateEnd instanceof Date &&
+      filters.releaseDateStart > filters.releaseDateEnd
+    ) {
+      throw new BadRequestException(
+        'releaseDateStart não pode ser maior que releaseDateEnd',
+      );
+    }
 
     if (filters.search) {
       where.OR = [
         { title: { contains: filters.search, mode: 'insensitive' } },
         { description: { contains: filters.search, mode: 'insensitive' } },
-        { originalTitle: { contains: filters.search, mode: 'insensitive' } },
       ];
     }
 
@@ -135,17 +229,18 @@ export class MovieService {
     if (filters.releaseDateStart || filters.releaseDateEnd) {
       where.releaseDate = {};
       if (filters.releaseDateStart)
-        where.releaseDate.gte = new Date(filters.releaseDateStart);
+        where.releaseDate.gte = filters.releaseDateStart;
       if (filters.releaseDateEnd)
-        where.releaseDate.lte = new Date(filters.releaseDateEnd);
+        where.releaseDate.lte = filters.releaseDateEnd;
     }
 
-    if (filters.genre) {
-      where.genres = {
-        some: {
-          name: { contains: filters.genre, mode: 'insensitive' },
-        },
-      };
+    const genresList = [
+      ...(filters.genres ?? []),
+      ...(filters.genre ? [filters.genre] : []),
+    ];
+
+    if (genresList.length > 0) {
+      where.genres = { hasSome: genresList };
     }
 
     return where;

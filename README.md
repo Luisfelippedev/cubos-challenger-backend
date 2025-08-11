@@ -44,6 +44,28 @@ $ yarn run start:dev
 $ yarn run start:prod
 ```
 
+## Ambiente
+
+Crie um arquivo `.env` na raiz do projeto com as variáveis abaixo (veja `.env.example`):
+
+```
+DATABASE_URL=
+SECURITY_JWT=
+SECURITY_JWT_REFRESH=
+EMAIL_FROM="Teste <no-reply@example.com>"
+# SMTP (MailHog)
+SMTP_HOST=127.0.0.1
+SMTP_PORT=1025
+```
+
+## MailHog
+
+Suba o MailHog com o docker-compose. A UI estará em `http://localhost:8025`.
+
+```
+docker compose up -d mailhog
+```
+
 ## Run tests
 
 ```bash
