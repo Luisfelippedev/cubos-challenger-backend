@@ -7,21 +7,20 @@ import { GlobalExceptionFilter } from './common/filters';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 
 const corsOptions: CorsOptions = {
-  origin: '*',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: 'Content-Type, Authorization',
+  origin: [
+    'http://localhost:3000',
+    'https://cubos-challenger-frontend.vercel.app',
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 };
 
 async function bootstrap() {
   dotenv.config();
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors({
-    origin: ['http://localhost:3000'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-  });
+  app.enableCors(corsOptions);
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
