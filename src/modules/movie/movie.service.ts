@@ -17,6 +17,16 @@ import { MovieFilterDto } from './dto/filter-movie.dto';
 export class MovieService {
   private readonly logger = new Logger(MovieService.name);
 
+  private mapToResponse(movie: any): ResponseMovieDto {
+    const plain = {
+      ...movie,
+      productionBudget: movie?.productionBudget?.toString?.()
+        ? movie.productionBudget.toString()
+        : movie?.productionBudget,
+    };
+    return plainToInstance(ResponseMovieDto, plain);
+  }
+
   constructor(
     private readonly prismaService: PrismaService,
     private readonly emailService: EmailService,
@@ -35,7 +45,7 @@ export class MovieService {
         },
       });
 
-      return plainToInstance(ResponseMovieDto, movie);
+      return this.mapToResponse(movie);
     } catch (error) {
       mapPrismaError(error, 'Falha ao criar filme.');
     }
@@ -119,7 +129,7 @@ export class MovieService {
       if (!movie) {
         throw new NotFoundException('Filme não encontrado.');
       }
-      return movie;
+      return this.mapToResponse(movie);
     } catch (error) {
       mapPrismaError(error, 'Falha ao criar filme.');
     }
@@ -127,7 +137,7 @@ export class MovieService {
 
   async update(
     id: string,
-    data: Partial<CreateMovieDto>,
+    data: import('./dto/update-movie.dto').UpdateMovieDto,
   ): Promise<ResponseMovieDto> {
     try {
       const movie = await this.prismaService.movie.findUnique({
@@ -142,7 +152,7 @@ export class MovieService {
         data,
       });
 
-      return plainToInstance(ResponseMovieDto, updatedMovie);
+      return this.mapToResponse(updatedMovie);
     } catch (error) {
       mapPrismaError(error, 'Falha ao atualizar filme.');
     }
@@ -199,7 +209,7 @@ export class MovieService {
         hasNext: page < totalPages,
         hasPrev: page > 1,
       },
-      data: plainToInstance(ResponseMovieDto, movies),
+      data: movies.map((m) => this.mapToResponse(m)),
     };
   }
 

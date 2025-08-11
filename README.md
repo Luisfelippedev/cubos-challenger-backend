@@ -138,8 +138,8 @@ SMTP_HOST=127.0.0.1
 SMTP_PORT=1025
 
 # AWS S3
-AWS_ACCESS_KEY_ID=<sua-key>
-AWS_SECRET_ACCESS_KEY=<sua-secret>
+AWS_ACCESS_KEY_ID=<acess-key>
+AWS_SECRET_ACCESS_KEY=<secret-key>
 AWS_REGION=<ex: sa-east-1>
 AWS_S3_BUCKET=<nome-do-bucket>
 ```

@@ -33,4 +33,10 @@ export class ResponseMovieDto {
     example: 'https://bucket.s3.amazonaws.com/imagens/sociedade-do-anel.jpg',
   })
   coverImageUrl?: string;
+
+  @ApiProperty({
+    example: '250000000.00',
+    description: 'Orçamento de produção',
+  })
+  productionBudget: string;
 }

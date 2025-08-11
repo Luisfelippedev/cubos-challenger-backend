@@ -8,6 +8,7 @@ import {
   IsEnum,
   IsOptional,
   IsUrl,
+  IsDecimal,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Genre } from 'src/common/enums';
@@ -71,4 +72,12 @@ export class CreateMovieDto {
   @IsOptional()
   @IsUrl()
   coverImageUrl?: string;
+
+  @ApiProperty({
+    example: '250000000.00',
+    description: 'Orçamento de produção do filme (decimal com 2 casas)',
+  })
+  @IsNotEmpty()
+  @IsDecimal({ decimal_digits: '2', force_decimal: true })
+  productionBudget: string;
 }
