@@ -83,7 +83,7 @@ Mensagens de erro previsíveis:
 1. Clone o repositório e instale dependências:
 
 ```bash
-git clone <repo>
+git clone https://github.com/Luisfelippedev/cubos-challenger-backend.git
 cd cubos-challenger-backend
 yarn install
 ```
