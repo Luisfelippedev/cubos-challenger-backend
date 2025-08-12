@@ -3,8 +3,8 @@
 API para gerenciamento de filmes, autenticação e notificações, desenvolvida para o desafio técnico da Cubos. Permite cadastro e listagem de filmes por usuário, upload de capa para S3, autenticação via JWT, paginação e filtros, além de notificações por e-mail em estreias diárias.
 
 ### 🚀 Deploy
-- Backend API: `https://cubos-challenger-backend-production.up.railway.app`
-- Documentação Swagger: `https://cubos-challenger-backend-production.up.railway.app/docs`
+- Backend API: https://cubos-challenger-backend-production.up.railway.app
+- Documentação Swagger: https://cubos-challenger-backend-production.up.railway.app/docs
 
 ### Sobre
 Backend do teste técnico da Cubos.io para gerenciamento de filmes.
